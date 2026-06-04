@@ -3,12 +3,11 @@ import { useApp } from '../context/AppContext';
 import { Plus, Pencil, Trash2, X, Package } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
 
-const EMPTY_FORM = { name: '', category: '', price: '', stock: '', minStock: '', description: '', image: '🍬' };
-const EMOJIS = ['🍬', '🍫', '🧁', '🍭', '🍮', '🎂', '🍰', '🍩', '🍪', '💝', '🌸', '🦄', '🍯', '🫐', '🍓'];
+const EMPTY_FORM = { name: '', category: '', price: '', stock: '', minStock: '', description: '', image: '' };
 
 export default function ProductsAdmin() {
   const { products, addProduct, updateProduct, deleteProduct } = useApp();
-  const [modal, setModal] = useState(null); // null | 'add' | 'edit'
+  const [modal, setModal] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [editId, setEditId] = useState(null);
   const [search, setSearch] = useState('');
@@ -70,16 +69,16 @@ export default function ProductsAdmin() {
                 {filtered.map(p => (
                   <tr key={p.id}>
                     <td>
-                              <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
-                                <img src={p.image && (p.image.startsWith('http') || p.image.startsWith('data:') ? p.image : encodeURI(p.image))}
-                                  alt={p.name}
-                                  onError={(e) => { e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='100%25' height='100%25' fill='%23f3eae9'/%3E%3C/text%3E%3C/svg%3E" }}
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                              </div>
-                        <div>
-                          <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>{p.name}</p>
-                          <p style={{ fontSize: '0.78rem', color: 'var(--gray-400)' }}>{p.description?.slice(0, 40)}</p>
-                        </div>
+                      <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+                        <img src={p.image && (p.image.startsWith('http') || p.image.startsWith('data:') ? p.image : encodeURI(p.image))}
+                          alt={p.name}
+                          onError={(e) => { e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='100%25' height='100%25' fill='%23f3eae9'/%3E%3C/svg%3E" }}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </div>
+                      <div>
+                        <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>{p.name}</p>
+                        <p style={{ fontSize: '0.78rem', color: 'var(--gray-400)' }}>{p.description?.slice(0, 40)}</p>
+                      </div>
                     </td>
                     <td>{p.category}</td>
                     <td style={{ fontWeight: 600, color: 'var(--pink-500)' }}>${p.price.toFixed(2)}</td>
@@ -109,17 +108,6 @@ export default function ProductsAdmin() {
             </div>
             <form onSubmit={save}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                <div className="form-group" style={{ gridColumn: '1/-1' }}>
-                  <label>Emoji</label>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {EMOJIS.map(e => (
-                      <button type="button" key={e} onClick={() => setForm({...form, image: e})}
-                        style={{ fontSize: '1.4rem', padding: '6px', borderRadius: 8, border: form.image === e ? '2px solid var(--pink-400)' : '2px solid transparent', background: form.image === e ? 'var(--pink-100)' : 'transparent', cursor: 'pointer' }}>
-                        {e}
-                      </button>
-                    ))}
-                  </div>
-                </div>
                 <div className="form-group">
                   <label>Nombre *</label>
                   <input name="name" value={form.name} onChange={handle} required placeholder="Nombre del producto" />

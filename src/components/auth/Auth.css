@@ -5,26 +5,39 @@
 
 .auth-deco {
   flex: 1;
-  background: linear-gradient(135deg, var(--pink-500) 0%, var(--pink-600) 50%, var(--brown-400) 100%);
+  background-image: 
+    linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+    url('../../assets/logo.jpg');
+  background-size: contain;
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-color: #1a1a1a;
   position: relative;
   overflow: hidden;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 48px 20px 40px 42%;
 }
 
 .deco-circle {
   position: absolute;
   border-radius: 50%;
-  opacity: 0.12;
+  opacity: 0.06;
   background: white;
 }
 .deco-1 { width: 400px; height: 400px; top: -100px; right: -100px; }
 .deco-2 { width: 250px; height: 250px; bottom: -50px; left: -50px; }
 .deco-3 { width: 150px; height: 150px; top: 50%; left: 30%; }
 
-.auth-brand { position: relative; z-index: 1; color: white; text-align: center; }
+.auth-brand {
+  position: relative;
+  z-index: 1;
+  color: white;
+  text-align: center;
+  max-width: 320px;
+  /* sin cambios adicionales */
+}
 .auth-brand-icon { font-size: 4rem; display: block; margin-bottom: 16px; }
 .auth-brand h1 { font-size: 2.4rem; font-family: var(--font-display); margin-bottom: 10px; }
 .auth-brand p { font-size: 1.1rem; opacity: 0.85; margin-bottom: 36px; }
@@ -50,7 +63,33 @@
   overflow-y: auto;
 }
 
-.auth-logo { font-size: 2.5rem; margin-bottom: 16px; }
+.auth-logo {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.auth-logo img {
+  display: inline-block;
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 50%;
+  background: #77ccf4;
+  padding: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.auth-logo {
+  margin-bottom: 16px;
+}
+.auth-logo img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
 .auth-card h2 { font-size: 1.7rem; color: var(--gray-700); margin-bottom: 6px; }
 .auth-sub { font-size: 0.9rem; color: var(--gray-400); margin-bottom: 28px; text-align: center; }
 
@@ -128,10 +167,11 @@
   margin-top: 24px;
   font-size: 0.88rem;
   color: var(--gray-400);
-}
-.auth-switch button {
-  background: none;
-  border: none;
+  display: block;
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  border-radius: 0; /* asegurar que no sea circular */
   color: var(--pink-500);
   font-weight: 600;
   margin-left: 4px;

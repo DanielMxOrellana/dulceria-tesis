@@ -31,7 +31,7 @@ export default function CatalogPage() {
     <div>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: '2rem', color: 'var(--gray-700)', marginBottom: 4 }}>Catálogo</h1>
-        <p style={{ color: 'var(--gray-400)' }}>Descubre nuestros dulces artesanales</p>
+        <p style={{ color: 'var(--gray-400)' }}>Descubre nuestros dulces tracionales de la ciudad de Cuenca</p>
       </div>
 
       {/* Search & filter */}

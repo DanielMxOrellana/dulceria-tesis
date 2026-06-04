@@ -23,7 +23,8 @@ export function AppProvider({ children }) {
 
   // Auth
   const login = (email, password) => {
-    const user = USERS_INITIAL.find(u => u.email === email);
+    const user = users.find(u => u.email === email);
+    // For this demo app passwords are not stored; accept the demo password '123456'
     if (user && password === '123456') {
       if (user.status === 'bloqueado') return { error: 'Tu cuenta está bloqueada. Contacta al administrador.' };
       setCurrentUser(user);

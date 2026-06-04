@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Package, ShoppingBag, TrendingUp, Eye, Edit3, Trash2, Plus, X } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
+import './VendorDashboard.css';
 
 export default function VendorDashboard() {
-  const { products, orders, currentUser, addProduct, updateProduct, deleteProduct } = useApp();
+  const { products, orders, currentUser, addProduct, updateProduct, deleteProduct, updateStock, updateOrderStatus } = useApp();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
@@ -15,13 +15,13 @@ export default function VendorDashboard() {
     stock: '',
     minStock: '',
     description: '',
-    image: 'ðŸ¬'
+    image: '??'
   });
 
-  const EMOJIS = ['ðŸ¬', 'ðŸ«', 'ðŸ§', 'ðŸ­', 'ðŸ®', 'ðŸŽ‚', 'ðŸ°', 'ðŸ©', 'ðŸª', 'ðŸ’', 'ðŸŒ¸', 'ðŸ¦„'];
+  const EMOJIS = ['??', '??', '??', '??', '??', '??', '??', '??', '??', '??', '??', '??'];
 
   const vendorProducts = products.filter(p => p.vendorId === currentUser?.id);
-  const vendorOrders = orders.filter(o => 
+  const vendorOrders = orders.filter(o =>
     o.items.some(item => vendorProducts.some(p => p.id === item.productId))
   );
 
@@ -31,7 +31,7 @@ export default function VendorDashboard() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!form.name.trim() || !form.category || !form.price || !form.stock || !form.minStock) {
       alert('Por favor completa todos los campos');
       return;
@@ -41,8 +41,8 @@ export default function VendorDashboard() {
       name: form.name,
       category: form.category,
       price: parseFloat(form.price),
-      stock: parseInt(form.stock),
-      minStock: parseInt(form.minStock),
+      stock: parseInt(form.stock, 10),
+      minStock: parseInt(form.minStock, 10),
       description: form.description,
       image: form.image,
       vendorId: currentUser.id,
@@ -56,7 +56,7 @@ export default function VendorDashboard() {
       addProduct(productData);
     }
 
-    setForm({ name: '', category: '', price: '', stock: '', minStock: '', description: '', image: 'ðŸ¬' });
+    setForm({ name: '', category: '', price: '', stock: '', minStock: '', description: '', image: '??' });
     setShowForm(false);
   };
 
@@ -66,240 +66,255 @@ export default function VendorDashboard() {
     setShowForm(true);
   };
 
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const changeStock = (productId, value) => {
+    const qty = parseInt(value, 10);
+    if (Number.isNaN(qty) || qty < 0) return;
+    updateStock(productId, qty);
+  };
+
+  const handleOrderAction = (orderId, action) => {
+    if (action === 'aceptar') updateOrderStatus(orderId, 'aceptado');
+    if (action === 'rechazar') updateOrderStatus(orderId, 'rechazado');
+    if (action === 'listo') updateOrderStatus(orderId, 'listo');
+  };
+
   const stats = [
-    { label: 'Mis Productos', value: vendorProducts.length, icon: Package, color: '#eaf4fd', iconColor: '#1a7abc' },
-    { label: 'Ventas Totales', value: `$${totalSales.toFixed(2)}`, icon: TrendingUp, color: '#fde8f0', iconColor: '#c93261' },
-    { label: 'Pedidos', value: totalOrders, icon: ShoppingBag, color: '#fef8e7', iconColor: '#c17d00' },
-    { label: 'Stock Bajo', value: lowStock, icon: Eye, color: '#ffe8e8', iconColor: '#c92a2a' }
+    { label: 'Mis Productos', value: vendorProducts.length, icon: Package, badge: 'badge-info' },
+    { label: 'Ventas Totales', value: `$${totalSales.toFixed(2)}`, icon: TrendingUp, badge: 'badge-warning' },
+    { label: 'Pedidos', value: totalOrders, icon: ShoppingBag, badge: 'badge-info' },
+    { label: 'Stock Bajo', value: lowStock, icon: Eye, badge: 'badge-danger' }
   ];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Dashboard Vendedor</h1>
-          <p className="text-gray-500">Bienvenido, {currentUser?.name}</p>
+    <div className="vendor-dashboard">
+      <div className="vendor-dashboard__top">
+        <div>
+          <h1>Dashboard Vendedor</h1>
+          <p>Bienvenido, {currentUser?.name}</p>
         </div>
+        <button className="btn btn-primary" onClick={() => { setShowForm(!showForm); setEditing(null); setForm({ name: '', category: '', price: '', stock: '', minStock: '', description: '', image: '??' }); }}>
+          <Plus size={18} /> Agregar Producto
+        </button>
+      </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          {stats.map((stat, i) => (
-            <div key={i} className="bg-white rounded-lg shadow p-6" style={{ borderLeft: `4px solid ${stat.iconColor}` }}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 mb-2">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
-                </div>
-                <div style={{ backgroundColor: stat.color }} className="p-3 rounded-lg">
-                  <stat.icon size={24} color={stat.iconColor} />
-                </div>
-              </div>
+      <div className="vendor-dashboard__stats">
+        {stats.map((stat) => (
+          <div key={stat.label} className="stat-card">
+            <div className="stat-icon">
+              <stat.icon size={22} />
             </div>
-          ))}
-        </div>
-
-        {/* Add Product Button */}
-        <div className="mb-6">
-          <button
-            onClick={() => {
-              setShowForm(!showForm);
-              setEditing(null);
-              setForm({ name: '', category: '', price: '', stock: '', minStock: '', description: '', image: 'ðŸ¬' });
-            }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium"
-          >
-            <Plus size={20} /> Agregar Producto
-          </button>
-        </div>
-
-        {/* Product Form */}
-        {showForm && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold">{editing ? 'Editar' : 'Nuevo'} Producto</h2>
-              <button onClick={() => { setShowForm(false); setEditing(null); }} className="text-gray-400 hover:text-gray-600">
-                <X size={20} />
-              </button>
+            <div className="stat-info">
+              <p>{stat.label}</p>
+              <h3>{stat.value}</h3>
             </div>
+          </div>
+        ))}
+      </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="Nombre"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="border rounded-lg px-3 py-2 text-sm"
-              />
-              <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="border rounded-lg px-3 py-2 text-sm"
-              >
-                <option value="">CategorÃ­a</option>
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+      {showForm && (
+        <div className="card vendor-dashboard__form">
+          <div className="page-header">
+            <div>
+              <h2>{editing ? 'Editar producto' : 'Nuevo producto'}</h2>
+              <p>Agrega los datos básicos para publicar tu producto.</p>
+            </div>
+            <button className="btn btn-secondary" onClick={() => { setShowForm(false); setEditing(null); }}><X size={18} /> Cerrar</button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="vendor-dashboard__product-form">
+            <div className="form-group">
+              <label>Nombre</label>
+              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ej. Suspiros de vainilla" />
+            </div>
+            <div className="form-group">
+              <label>Categoría</label>
+              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+                <option value="">Seleccionar categoría</option>
+                {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
               </select>
-              <input
-                type="number"
-                placeholder="Precio"
-                step="0.01"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: e.target.value })}
-                className="border rounded-lg px-3 py-2 text-sm"
-              />
-              <input
-                type="number"
-                placeholder="Stock"
-                value={form.stock}
-                onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                className="border rounded-lg px-3 py-2 text-sm"
-              />
-              <input
-                type="number"
-                placeholder="Stock MÃ­nimo"
-                value={form.minStock}
-                onChange={(e) => setForm({ ...form, minStock: e.target.value })}
-                className="border rounded-lg px-3 py-2 text-sm"
-              />
-              <textarea
-                placeholder="DescripciÃ³n"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="border rounded-lg px-3 py-2 text-sm col-span-2"
-              />
-              <div className="col-span-2">
-                <label className="text-sm text-gray-600 mb-2 block">Emoji</label>
-                <div className="flex gap-2 flex-wrap">
-                  {EMOJIS.map(emoji => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setForm({ ...form, image: emoji })}
-                      className={`text-2xl p-2 rounded ${form.image === emoji ? 'bg-blue-600' : 'bg-gray-200'}`}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
+            </div>
+            <div className="form-group">
+              <label>Precio</label>
+              <input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="0.00" />
+            </div>
+            <div className="form-group">
+              <label>Stock</label>
+              <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="0" />
+            </div>
+            <div className="form-group">
+              <label>Stock mínimo</label>
+              <input type="number" value={form.minStock} onChange={(e) => setForm({ ...form, minStock: e.target.value })} placeholder="0" />
+            </div>
+            <div className="form-group form-group--wide">
+              <label>Descripción</label>
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Ej. Caja de 12 suspiros hechos a mano." rows={3} />
+            </div>
+            <div className="form-group form-group--wide">
+              <label>Emoji del producto</label>
+              <div className="emoji-picker">
+                {EMOJIS.map((emoji) => (
+                  <button key={emoji} type="button" className={`emoji-button ${form.image === emoji ? 'emoji-button--active' : ''}`} onClick={() => setForm({ ...form, image: emoji })}>{emoji}</button>
+                ))}
               </div>
-              <button type="submit" className="col-span-2 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium">
-                {editing ? 'Actualizar' : 'Crear'} Producto
-              </button>
-            </form>
-          </div>
-        )}
+            </div>
+            <div className="form-actions">
+              <button type="submit" className="btn btn-primary">{editing ? 'Actualizar producto' : 'Crear producto'}</button>
+            </div>
+          </form>
+        </div>
+      )}
 
-        {/* Products Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-bold">Mis Productos ({vendorProducts.length})</h2>
+      <div className="vendor-dashboard__section card">
+        <div className="section-head">
+          <div>
+            <h2>Mis productos</h2>
+            <p className="section-subtitle">Gestiona tu stock y revisa qué productos están listos para la venta.</p>
           </div>
-          
-          {vendorProducts.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              No tienes productos aÃºn. Â¡Crea tu primer producto!
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">Producto</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">CategorÃ­a</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">Precio</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">Stock</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {vendorProducts.map(product => (
-                    <tr key={product.id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
-                            <img src={product.image && (product.image.startsWith('http') || product.image.startsWith('data:') ? product.image : encodeURI(product.image))}
-                              alt={product.name}
-                              onError={(e) => { e.currentTarget.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='100%25' height='100%25' fill='%23f3eae9'/%3E%3C/text%3E%3C/svg%3E" }}
-                              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                          </div>
-                          <span className="font-medium text-gray-800">{product.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{product.category}</td>
-                      <td className="px-6 py-4 font-medium text-gray-800">${product.price}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          product.stock <= product.minStock ? 'bg-red-100 text-red-800' :
-                          product.stock <= product.minStock * 1.5 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {product.stock} unidades
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 flex gap-2">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="text-blue-600 hover:text-blue-800 p-2"
-                        >
-                          <Edit3 size={18} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (window.confirm('Â¿Eliminar este producto?')) deleteProduct(product.id);
-                          }}
-                          className="text-red-600 hover:text-red-800 p-2"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <div className="section-tag">{vendorProducts.length} productos</div>
         </div>
 
-        {/* Recent Orders */}
-        {vendorOrders.length > 0 && (
-          <div className="mt-8 bg-white rounded-lg shadow overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-bold">Pedidos Recientes</h2>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">Pedido</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">Cliente</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">Total</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">Estado</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-700">Fecha</th>
+        {vendorProducts.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">??</div>
+            <h3>No tienes productos aún</h3>
+            <p>Crea tu primer producto para que tus clientes puedan comprar.</p>
+            <button className="btn btn-primary" onClick={() => setShowForm(true)}>Crear Producto</button>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendorProducts.map((product) => (
+                  <tr key={product.id}>
+                    <td>
+                      <div className="product-cell">
+                        <div className="product-avatar">
+                          {product.image && (product.image.startsWith('http') || product.image.startsWith('data:') ? <img src={product.image} alt={product.name} /> : <span>{product.image}</span>)}
+                        </div>
+                        <div>
+                          <strong>{product.name}</strong>
+                          <p className="text-muted">{product.description || 'Sin descripción'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{product.category}</td>
+                    <td>${product.price.toFixed(2)}</td>
+                    <td>
+                      <div className="stock-row">
+                        <input type="number" value={product.stock} onChange={(e) => changeStock(product.id, e.target.value)} className="stock-input" />
+                        <span className={`badge ${product.stock <= product.minStock ? 'badge-danger' : product.stock <= product.minStock * 1.5 ? 'badge-warning' : 'badge-success'}`}>{product.stock} uds</span>
+                      </div>
+                    </td>
+                    <td className="actions-cell">
+                      <button className="btn btn-secondary" onClick={() => handleEdit(product)}><Edit3 size={14} /> Editar</button>
+                      <button className="btn btn-danger" onClick={() => { if (window.confirm('¿Eliminar este producto?')) deleteProduct(product.id); }}><Trash2 size={14} /> Eliminar</button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {vendorOrders.slice(0, 5).map(order => (
-                    <tr key={order.id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium text-gray-800">{order.id}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{order.clientName}</td>
-                      <td className="px-6 py-4 font-medium text-gray-800">${order.total.toFixed(2)}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          order.status === 'entregado' ? 'bg-green-100 text-green-800' :
-                          order.status === 'pendiente' ? 'bg-red-100 text-red-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{order.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
+
+      <div className="vendor-dashboard__section card">
+        <div className="section-head">
+          <div>
+            <h2>Pedidos</h2>
+            <p className="section-subtitle">Acepta, rechaza y revisa quién hizo cada pedido.</p>
+          </div>
+          <div className="section-tag">{vendorOrders.length} pedidos</div>
+        </div>
+
+        {vendorOrders.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">??</div>
+            <h3>No hay pedidos aún</h3>
+            <p>Cuando recibas pedidos, aparecerán aquí para que los gestiones.</p>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendorOrders.slice(0, 8).map((order) => (
+                  <tr key={order.id}>
+                    <td>{order.id}</td>
+                    <td>{order.clientName}</td>
+                    <td>${order.total.toFixed(2)}</td>
+                    <td><span className={`badge ${order.status === 'entregado' ? 'badge-success' : order.status === 'pendiente' ? 'badge-danger' : 'badge-info'}`}>{order.status}</span></td>
+                    <td>{order.date}</td>
+                    <td className="actions-cell">
+                      <button className="btn btn-success" onClick={() => handleOrderAction(order.id, 'aceptar')}>Aceptar</button>
+                      <button className="btn btn-danger" onClick={() => handleOrderAction(order.id, 'rechazar')}>Rechazar</button>
+                      <button className="btn btn-secondary" onClick={() => setSelectedOrder(order)}>Ver</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {selectedOrder && (
+        <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
+          <div className="modal" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2>Pedido {selectedOrder.id}</h2>
+                <p className="section-subtitle">Cliente: {selectedOrder.clientName}</p>
+              </div>
+              <button className="btn btn-secondary" onClick={() => setSelectedOrder(null)}>Cerrar</button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Fecha</label>
+                <p>{selectedOrder.date}</p>
+              </div>
+              <div className="form-group">
+                <label>Estado</label>
+                <p>{selectedOrder.status}</p>
+              </div>
+              <div className="form-group">
+                <label>Productos</label>
+                <div className="order-items">
+                  {selectedOrder.items.map((item, index) => (
+                    <div key={index} className="order-item-row">
+                      <span>{item.name}</span>
+                      <span>{item.qty} x ${item.price.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setSelectedOrder(null)}>Cerrar</button>
+              <button className="btn btn-success" onClick={() => { handleOrderAction(selectedOrder.id, 'listo'); setSelectedOrder(null); }}>Marcar listo</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -80,6 +80,7 @@ export const ORDERS_INITIAL = [
   { id: 'PED-003', clientId: 2, clientName: 'María García', items: [{productId: 7, name: 'Galletas Decoradas', qty: 6, price: 2.00}], total: 12.00, status: 'entregado', date: '2024-05-30', notes: '' },
   { id: 'PED-004', clientId: 4, clientName: 'Ana Rodríguez', items: [{productId: 2, name: 'Trufas de Chocolate', qty: 3, price: 1.80},{productId: 8, name: 'Fudge de Caramelo', qty: 1, price: 5.00}], total: 10.40, status: 'rechazado', date: '2024-05-29', notes: 'Sin nueces' },
   { id: 'PED-005', clientId: 3, clientName: 'Carlos López', items: [{productId: 6, name: 'Paletas de Chocolate', qty: 2, price: 4.00}], total: 8.00, status: 'en preparacion', date: '2024-06-02', notes: '' },
+  { id: 'PED-006', clientId: 2, clientName: 'María García', items: [{productId: 41, name: 'Suspiros Especiales', qty: 3, price: 0.45}], total: 1.35, status: 'pendiente', date: '2024-06-03', notes: 'Entrega urgente para evento pequeño' },
 ];
 
 export const USERS_INITIAL = [
@@ -90,6 +91,7 @@ export const USERS_INITIAL = [
   { id: 5, name: 'Pedro Martínez', email: 'pedro@email.com', role: 'cliente', status: 'activo', joinDate: '2024-05-10' },
   { id: 6, name: 'Sweet Dreams', email: 'sweetdreams@vendor.com', role: 'vendor', status: 'activo', joinDate: '2024-02-01' },
   { id: 7, name: 'Chocolate Master', email: 'chocolatemaster@vendor.com', role: 'vendor', status: 'activo', joinDate: '2024-02-15' },
+  { id: 8, name: 'Daniel Vendedor', email: 'danielvendedor@gmail.com', role: 'vendor', status: 'activo', joinDate: '2026-06-03' },
 ];
 
 export const CATEGORIES = ['tradicionales', 'chocolates'];

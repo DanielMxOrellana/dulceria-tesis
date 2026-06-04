@@ -52,8 +52,8 @@ export default function Layout({ children }) {
         <div className="sidebar-brand">
           <span className="brand-icon">🍬</span>
           <div>
-            <h2>Dulcería</h2>
-            <span>Artesanal</span>
+            <h2>Dulcería El Suspiro</h2>
+            <span></span>
           </div>
         </div>
 

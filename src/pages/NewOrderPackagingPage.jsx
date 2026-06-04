@@ -14,10 +14,11 @@ export default function NewOrderPackagingPage() {
 
   useEffect(() => {
     const recommended = getBestPackageForType(selectedType, cartCount) || getBestPackageForCount(cartCount);
-    if (recommended && recommended.id !== orderDraft.packagingId) {
+    // Solo aplicar la recomendación si aún no se ha seleccionado manualmente un empaque
+    if (recommended && !orderDraft.packagingId) {
       updateOrderDraft({ packagingId: recommended.id });
     }
-  }, [cartCount, orderDraft.packagingId, selectedType, updateOrderDraft]);
+  }, [cartCount, selectedType, updateOrderDraft, orderDraft.packagingId]);
 
   const selectType = (typeKey) => {
     const recommended = getBestPackageForType(typeKey, cartCount) || getBestPackageForCount(cartCount);
@@ -53,7 +54,27 @@ export default function NewOrderPackagingPage() {
               {PACKAGING_TYPES.map(type => {
                 const isActive = selectedType === type.key;
                 return (
-                  <button key={type.key} type="button" onClick={() => selectType(type.key)} style={{ textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: `1.5px solid ${isActive ? 'var(--pink-400)' : 'var(--gray-200)'}`, background: isActive ? 'var(--pink-50)' : 'white', cursor: 'pointer' }}>
+                  <button
+                    key={type.key}
+                    type="button"
+                    onClick={() => selectType(type.key)}
+                    aria-pressed={isActive}
+                    style={{
+                      textAlign: 'left',
+                      padding: '14px 16px',
+                      borderRadius: 'var(--radius-md)',
+                      border: `1.5px solid ${isActive ? 'var(--pink-400)' : 'var(--gray-200)'}`,
+                      background: isActive ? 'var(--pink-50)' : 'white',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      boxShadow: isActive ? '0 6px 18px rgba(236,72,153,0.08)' : 'none',
+                    }}
+                  >
+                    {isActive && (
+                      <span style={{ position: 'absolute', top: 8, right: 10, background: 'var(--pink-500)', color: 'white', borderRadius: 999, width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
+                        ✓
+                      </span>
+                    )}
                     <div style={{ fontSize: '1.2rem', marginBottom: 8 }}>{type.emoji}</div>
                     <div style={{ fontWeight: 700, marginBottom: 3 }}>{type.label}</div>
                     <div style={{ fontSize: '0.82rem', color: 'var(--gray-400)' }}>{type.description}</div>
@@ -67,7 +88,29 @@ export default function NewOrderPackagingPage() {
             {packagingOptions.map(option => {
               const isActive = orderDraft.packagingId === option.id;
               return (
-                <button key={option.id} type="button" onClick={() => updateOrderDraft({ packagingId: option.id })} style={{ textAlign: 'left', padding: '14px 16px', borderRadius: 'var(--radius-md)', border: `1.5px solid ${isActive ? 'var(--pink-400)' : 'var(--gray-200)'}`, background: isActive ? 'var(--pink-50)' : 'white', cursor: 'pointer' }}>
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => updateOrderDraft({ packagingId: option.id })}
+                  aria-pressed={isActive}
+                  style={{
+                    textAlign: 'left',
+                    padding: '14px 16px',
+                    borderRadius: 'var(--radius-md)',
+                    border: `1.5px solid ${isActive ? 'var(--pink-400)' : 'var(--gray-200)'}`,
+                    background: isActive ? 'var(--pink-50)' : 'white',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    boxShadow: isActive ? '0 8px 24px rgba(236,72,153,0.08)' : 'none',
+                    transition: 'transform 120ms ease, box-shadow 120ms ease',
+                    transform: isActive ? 'translateY(-2px)' : 'none',
+                  }}
+                >
+                  {isActive && (
+                    <span style={{ position: 'absolute', top: 10, right: 12, background: 'var(--pink-500)', color: 'white', borderRadius: 999, width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
+                      ✓
+                    </span>
+                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', marginBottom: 8 }}>
                     <div>
                       <div style={{ fontWeight: 700, marginBottom: 3 }}>{option.emoji} {option.nombre}</div>
