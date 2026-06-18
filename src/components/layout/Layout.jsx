@@ -19,6 +19,10 @@ const adminNav = [
 
 const vendorNav = [
   { path: '/vendor', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/vendor/pedidos', icon: ClipboardList, label: 'Pedidos' },
+  { path: '/vendor/productos', icon: Package, label: 'Productos' },
+  { path: '/vendor/inventario', icon: ShoppingBag, label: 'Inventario' },
+  { path: '/vendor/estadisticas', icon: BarChart2, label: 'Estadisticas' },
   { path: '/catalogo', icon: ShoppingBag, label: 'Catálogo' },
 ];
 
@@ -29,13 +33,16 @@ const clientNav = [
 ];
 
 export default function Layout({ children }) {
-  const { currentUser, logout, cartCount, lowStockProducts } = useApp();
+  const { currentUser, logout, cartCount, lowStockProducts, products } = useApp();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isAdmin = currentUser?.role === 'admin';
   const isVendor = currentUser?.role === 'vendor';
   const navItems = isAdmin ? adminNav : isVendor ? vendorNav : clientNav;
+  const vendorLowStockCount = products.filter(
+    (product) => product.vendorId === currentUser?.id && product.stock > 0 && product.stock <= product.minStock
+  ).length;
 
   const isActive = (path) => {
     if (path === '/admin' || path === '/vendor' || path === '/catalogo') return location.pathname === path;
@@ -70,8 +77,8 @@ export default function Layout({ children }) {
               {label === 'Nuevo Pedido' && cartCount > 0 && (
                 <span className="nav-badge">{cartCount}</span>
               )}
-              {label === 'Inventario' && lowStockProducts.length > 0 && (
-                <span className="nav-badge nav-badge--warning">{lowStockProducts.length}</span>
+              {label === 'Inventario' && (isVendor ? vendorLowStockCount : lowStockProducts.length) > 0 && (
+                <span className="nav-badge nav-badge--warning">{isVendor ? vendorLowStockCount : lowStockProducts.length}</span>
               )}
             </Link>
           ))}

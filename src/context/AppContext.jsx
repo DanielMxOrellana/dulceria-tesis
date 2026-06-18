@@ -40,10 +40,10 @@ export function AppProvider({ children }) {
     notes: '',
   }); };
 
-  const register = (name, email, password, role = 'cliente') => {
+  const register = (name, email, password) => {
     const exists = users.find(u => u.email === email);
     if (exists) return { error: 'El correo ya está registrado.' };
-    const newUser = { id: Date.now(), name, email, role, status: 'activo', joinDate: new Date().toISOString().split('T')[0] };
+    const newUser = { id: Date.now(), name, email, role: 'cliente', status: 'activo', joinDate: new Date().toISOString().split('T')[0] };
     setUsers(prev => [...prev, newUser]);
     setCurrentUser(newUser);
     return { success: true };

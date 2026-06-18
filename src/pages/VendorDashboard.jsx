@@ -1,186 +1,416 @@
-import React, { useState } from 'react';
+ï»¿import React, { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Package, ShoppingBag, TrendingUp, Eye, Edit3, Trash2, Plus, X } from 'lucide-react';
-import { CATEGORIES } from '../data/mockData';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ClipboardList,
+  Edit3,
+  Eye,
+  Package,
+  Plus,
+  Save,
+  Trash2,
+  TrendingUp,
+  Truck,
+  X,
+  XCircle,
+} from 'lucide-react';
+import { CATEGORIES, STATUS_COLORS } from '../data/mockData';
 import './VendorDashboard.css';
 
-export default function VendorDashboard() {
-  const { products, orders, currentUser, addProduct, updateProduct, deleteProduct, updateStock, updateOrderStatus } = useApp();
+const EMPTY_FORM = {
+  name: '',
+  category: '',
+  price: '',
+  stock: '',
+  minStock: '',
+  description: '',
+  image: '',
+};
+
+const money = (value) => `$${Number(value || 0).toFixed(2)}`;
+
+export default function VendorDashboard({ section = 'dashboard' }) {
+  const {
+    products,
+    orders,
+    users,
+    currentUser,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    updateStock,
+    updateOrderStatus,
+  } = useApp();
+
   const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({
-    name: '',
-    category: '',
-    price: '',
-    stock: '',
-    minStock: '',
-    description: '',
-    image: '??'
-  });
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [error, setError] = useState('');
 
-  const EMOJIS = ['??', '??', '??', '??', '??', '??', '??', '??', '??', '??', '??', '??'];
-
-  const vendorProducts = products.filter(p => p.vendorId === currentUser?.id);
-  const vendorOrders = orders.filter(o =>
-    o.items.some(item => vendorProducts.some(p => p.id === item.productId))
+  const vendorProducts = useMemo(
+    () => products.filter((product) => product.vendorId === currentUser?.id),
+    [products, currentUser?.id]
   );
 
-  const totalSales = vendorOrders.reduce((sum, o) => sum + o.total, 0);
-  const totalOrders = vendorOrders.length;
-  const lowStock = vendorProducts.filter(p => p.stock > 0 && p.stock <= p.minStock).length;
+  const vendorProductIds = useMemo(
+    () => new Set(vendorProducts.map((product) => product.id)),
+    [vendorProducts]
+  );
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const vendorOrders = useMemo(() => {
+    return orders
+      .map((order) => {
+        const vendorItems = order.items.filter((item) => vendorProductIds.has(item.productId));
+        const vendorTotal = vendorItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+        const client = users.find((user) => user.id === order.clientId);
 
-    if (!form.name.trim() || !form.category || !form.price || !form.stock || !form.minStock) {
-      alert('Por favor completa todos los campos');
+        return {
+          ...order,
+          vendorItems,
+          vendorTotal,
+          clientEmail: client?.email || 'No registrado',
+          customer: {
+            name: order.customer?.name || order.clientName || client?.name || 'Cliente',
+            phone: order.customer?.phone || 'No registrado',
+            address: order.customer?.address || 'No registrada',
+            reference: order.customer?.reference || 'Sin referencia',
+          },
+        };
+      })
+      .filter((order) => order.vendorItems.length > 0);
+  }, [orders, users, vendorProductIds]);
+
+  const lowStockProducts = vendorProducts.filter(
+    (product) => product.stock > 0 && product.stock <= product.minStock
+  );
+  const outOfStockProducts = vendorProducts.filter((product) => product.stock === 0);
+  const totalSales = vendorOrders.reduce((sum, order) => sum + order.vendorTotal, 0);
+  const pendingOrders = vendorOrders.filter((order) => order.status === 'pendiente').length;
+
+  const stats = [
+    { label: 'Productos publicados', value: vendorProducts.length, icon: Package },
+    { label: 'Pedidos recibidos', value: vendorOrders.length, icon: ClipboardList },
+    { label: 'Ventas acumuladas', value: money(totalSales), icon: TrendingUp },
+    { label: 'Stock bajo', value: lowStockProducts.length + outOfStockProducts.length, icon: AlertTriangle },
+  ];
+
+  const pageTitles = {
+    dashboard: {
+      title: 'Panel del vendedor',
+      subtitle: 'Resumen de tus productos, pedidos, inventario y ventas.',
+    },
+    pedidos: {
+      title: 'Pedidos',
+      subtitle: 'Gestiona los pedidos que contienen tus productos.',
+    },
+    productos: {
+      title: 'Productos',
+      subtitle: 'Agrega, edita y elimina tus productos publicados.',
+    },
+    inventario: {
+      title: 'Inventario',
+      subtitle: 'Actualiza stock y controla alertas de inventario bajo.',
+    },
+    estadisticas: {
+      title: 'Estadisticas',
+      subtitle: 'Consulta ventas, pedidos y rendimiento de tu catalogo.',
+    },
+  };
+
+  const currentPage = pageTitles[section] || pageTitles.dashboard;
+
+  const resetForm = () => {
+    setForm(EMPTY_FORM);
+    setEditingId(null);
+    setError('');
+  };
+
+  const openNewProductForm = () => {
+    resetForm();
+    setShowForm(true);
+  };
+
+  const openEditProductForm = (product) => {
+    setForm({
+      name: product.name,
+      category: product.category,
+      price: product.price,
+      stock: product.stock,
+      minStock: product.minStock,
+      description: product.description || '',
+      image: product.image || '',
+    });
+    setEditingId(product.id);
+    setShowForm(true);
+    setError('');
+  };
+
+  const handleFormChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const price = Number(form.price);
+    const stock = Number.parseInt(form.stock, 10);
+    const minStock = Number.parseInt(form.minStock, 10);
+
+    if (!form.name.trim() || !form.category || Number.isNaN(price) || Number.isNaN(stock) || Number.isNaN(minStock)) {
+      setError('Completa nombre, categoria, precio, stock y stock minimo.');
+      return;
+    }
+
+    if (price < 0 || stock < 0 || minStock < 0) {
+      setError('Los valores numericos no pueden ser negativos.');
       return;
     }
 
     const productData = {
-      name: form.name,
+      name: form.name.trim(),
       category: form.category,
-      price: parseFloat(form.price),
-      stock: parseInt(form.stock, 10),
-      minStock: parseInt(form.minStock, 10),
-      description: form.description,
-      image: form.image,
+      price,
+      stock,
+      minStock,
+      description: form.description.trim(),
+      image: form.image.trim() || '/img/dulces/logo.jpg',
       vendorId: currentUser.id,
-      vendorName: currentUser.name
+      vendorName: currentUser.name,
+      disponible: stock > 0,
+      available: stock > 0,
     };
 
-    if (editing) {
-      updateProduct(editing, productData);
-      setEditing(null);
-    } else {
-      addProduct(productData);
-    }
+    if (editingId) updateProduct(editingId, productData);
+    else addProduct(productData);
 
-    setForm({ name: '', category: '', price: '', stock: '', minStock: '', description: '', image: '??' });
+    resetForm();
     setShowForm(false);
   };
 
-  const handleEdit = (product) => {
-    setForm(product);
-    setEditing(product.id);
-    setShowForm(true);
+  const handleStockChange = (productId, value) => {
+    const qty = Number.parseInt(value, 10);
+    if (!Number.isNaN(qty) && qty >= 0) updateStock(productId, qty);
   };
 
-  const [selectedOrder, setSelectedOrder] = useState(null);
-
-  const changeStock = (productId, value) => {
-    const qty = parseInt(value, 10);
-    if (Number.isNaN(qty) || qty < 0) return;
-    updateStock(productId, qty);
+  const handleMinStockChange = (product, value) => {
+    const minStock = Number.parseInt(value, 10);
+    if (!Number.isNaN(minStock) && minStock >= 0) updateProduct(product.id, { minStock });
   };
 
-  const handleOrderAction = (orderId, action) => {
-    if (action === 'aceptar') updateOrderStatus(orderId, 'aceptado');
-    if (action === 'rechazar') updateOrderStatus(orderId, 'rechazado');
-    if (action === 'listo') updateOrderStatus(orderId, 'listo');
+  const updateOrder = (order, status) => {
+    updateOrderStatus(order.id, status);
+    setSelectedOrder((current) => (current?.id === order.id ? { ...current, status } : current));
   };
 
-  const stats = [
-    { label: 'Mis Productos', value: vendorProducts.length, icon: Package, badge: 'badge-info' },
-    { label: 'Ventas Totales', value: `$${totalSales.toFixed(2)}`, icon: TrendingUp, badge: 'badge-warning' },
-    { label: 'Pedidos', value: totalOrders, icon: ShoppingBag, badge: 'badge-info' },
-    { label: 'Stock Bajo', value: lowStock, icon: Eye, badge: 'badge-danger' }
-  ];
+  const renderOrderActions = (order) => (
+    <div className="actions-cell">
+      {order.status === 'pendiente' && (
+        <>
+          <button className="btn btn-success btn-sm" onClick={() => updateOrder(order, 'aceptado')}>
+            <CheckCircle2 size={14} /> Aceptar
+          </button>
+          <button className="btn btn-danger btn-sm" onClick={() => updateOrder(order, 'rechazado')}>
+            <XCircle size={14} /> Rechazar
+          </button>
+        </>
+      )}
+      {['aceptado', 'en preparacion'].includes(order.status) && (
+        <button className="btn btn-primary btn-sm" onClick={() => updateOrder(order, 'listo')}>
+          <Truck size={14} /> Listo
+        </button>
+      )}
+      <button className="btn btn-secondary btn-sm" onClick={() => setSelectedOrder(order)}>
+        <Eye size={14} /> Detalle
+      </button>
+    </div>
+  );
 
   return (
     <div className="vendor-dashboard">
       <div className="vendor-dashboard__top">
         <div>
-          <h1>Dashboard Vendedor</h1>
-          <p>Bienvenido, {currentUser?.name}</p>
+          <h1>{currentPage.title}</h1>
+          <p>{currentPage.subtitle}</p>
         </div>
-        <button className="btn btn-primary" onClick={() => { setShowForm(!showForm); setEditing(null); setForm({ name: '', category: '', price: '', stock: '', minStock: '', description: '', image: '??' }); }}>
-          <Plus size={18} /> Agregar Producto
-        </button>
+        {(section === 'dashboard' || section === 'productos') && (
+          <button className="btn btn-primary" onClick={openNewProductForm}>
+            <Plus size={18} /> Agregar producto
+          </button>
+        )}
       </div>
 
-      <div className="vendor-dashboard__stats">
-        {stats.map((stat) => (
-          <div key={stat.label} className="stat-card">
-            <div className="stat-icon">
-              <stat.icon size={22} />
+      {(section === 'dashboard' || section === 'estadisticas') && (
+        <div className="vendor-dashboard__stats">
+          {stats.map(({ label, value, icon: Icon }) => (
+            <div key={label} className="stat-card">
+              <div className="stat-icon"><Icon size={22} /></div>
+              <div className="stat-info">
+                <p>{label}</p>
+                <h3>{value}</h3>
+              </div>
             </div>
-            <div className="stat-info">
-              <p>{stat.label}</p>
-              <h3>{stat.value}</h3>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {showForm && (
-        <div className="card vendor-dashboard__form">
-          <div className="page-header">
+      {(section === 'dashboard' || section === 'inventario') && (lowStockProducts.length > 0 || outOfStockProducts.length > 0 || pendingOrders > 0) && (
+        <div className="vendor-alerts">
+          {pendingOrders > 0 && <span><ClipboardList size={16} /> {pendingOrders} pedidos pendientes por responder</span>}
+          {lowStockProducts.length > 0 && <span><AlertTriangle size={16} /> {lowStockProducts.length} productos llegaron al stock minimo</span>}
+          {outOfStockProducts.length > 0 && <span><XCircle size={16} /> {outOfStockProducts.length} productos agotados</span>}
+        </div>
+      )}
+
+      {showForm && (section === 'dashboard' || section === 'productos') && (
+        <section className="card vendor-dashboard__form">
+          <div className="section-head">
             <div>
-              <h2>{editing ? 'Editar producto' : 'Nuevo producto'}</h2>
-              <p>Agrega los datos básicos para publicar tu producto.</p>
+              <h2>{editingId ? 'Editar producto' : 'Nuevo producto'}</h2>
+              <p className="section-subtitle">Define precio, inventario y alerta de stock minimo.</p>
             </div>
-            <button className="btn btn-secondary" onClick={() => { setShowForm(false); setEditing(null); }}><X size={18} /> Cerrar</button>
+            <button className="btn btn-secondary" onClick={() => { setShowForm(false); resetForm(); }}>
+              <X size={18} /> Cerrar
+            </button>
           </div>
+
+          {error && <div className="form-error">{error}</div>}
 
           <form onSubmit={handleSubmit} className="vendor-dashboard__product-form">
             <div className="form-group">
               <label>Nombre</label>
-              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ej. Suspiros de vainilla" />
+              <input value={form.name} onChange={(event) => handleFormChange('name', event.target.value)} placeholder="Ej. Quesitos de manjar" />
             </div>
             <div className="form-group">
-              <label>Categoría</label>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-                <option value="">Seleccionar categoría</option>
-                {CATEGORIES.map((c) => (<option key={c} value={c}>{c}</option>))}
+              <label>Categoria</label>
+              <select value={form.category} onChange={(event) => handleFormChange('category', event.target.value)}>
+                <option value="">Seleccionar categoria</option>
+                {CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
               </select>
             </div>
             <div className="form-group">
               <label>Precio</label>
-              <input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="0.00" />
+              <input type="number" min="0" step="0.01" value={form.price} onChange={(event) => handleFormChange('price', event.target.value)} placeholder="0.00" />
             </div>
             <div className="form-group">
-              <label>Stock</label>
-              <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="0" />
+              <label>Stock actual</label>
+              <input type="number" min="0" value={form.stock} onChange={(event) => handleFormChange('stock', event.target.value)} placeholder="0" />
             </div>
             <div className="form-group">
-              <label>Stock mínimo</label>
-              <input type="number" value={form.minStock} onChange={(e) => setForm({ ...form, minStock: e.target.value })} placeholder="0" />
+              <label>Stock minimo</label>
+              <input type="number" min="0" value={form.minStock} onChange={(event) => handleFormChange('minStock', event.target.value)} placeholder="10" />
+            </div>
+            <div className="form-group">
+              <label>Imagen o ruta</label>
+              <input value={form.image} onChange={(event) => handleFormChange('image', event.target.value)} placeholder="/img/dulces/producto.png" />
             </div>
             <div className="form-group form-group--wide">
-              <label>Descripción</label>
-              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Ej. Caja de 12 suspiros hechos a mano." rows={3} />
-            </div>
-            <div className="form-group form-group--wide">
-              <label>Emoji del producto</label>
-              <div className="emoji-picker">
-                {EMOJIS.map((emoji) => (
-                  <button key={emoji} type="button" className={`emoji-button ${form.image === emoji ? 'emoji-button--active' : ''}`} onClick={() => setForm({ ...form, image: emoji })}>{emoji}</button>
-                ))}
-              </div>
+              <label>Descripcion</label>
+              <textarea rows={3} value={form.description} onChange={(event) => handleFormChange('description', event.target.value)} placeholder="Detalle para que el cliente reconozca el producto" />
             </div>
             <div className="form-actions">
-              <button type="submit" className="btn btn-primary">{editing ? 'Actualizar producto' : 'Crear producto'}</button>
+              <button type="submit" className="btn btn-primary">
+                <Save size={16} /> {editingId ? 'Guardar cambios' : 'Crear producto'}
+              </button>
             </div>
           </form>
-        </div>
+        </section>
       )}
 
-      <div className="vendor-dashboard__section card">
+      {section === 'dashboard' && (
+        <section className="vendor-dashboard__section card">
+          <div className="section-head">
+            <div>
+              <h2>Actividad reciente</h2>
+              <p className="section-subtitle">Una vista rapida de lo que requiere tu atencion.</p>
+            </div>
+          </div>
+          <div className="vendor-summary-grid">
+            <div className="summary-panel">
+              <h3>Pedidos pendientes</h3>
+              <p>{pendingOrders}</p>
+            </div>
+            <div className="summary-panel">
+              <h3>Productos con alerta</h3>
+              <p>{lowStockProducts.length + outOfStockProducts.length}</p>
+            </div>
+            <div className="summary-panel">
+              <h3>Ultimo pedido</h3>
+              <p>{vendorOrders[0]?.id || 'Sin pedidos'}</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {section === 'pedidos' && (
+      <section className="vendor-dashboard__section card" id="pedidos">
         <div className="section-head">
           <div>
-            <h2>Mis productos</h2>
-            <p className="section-subtitle">Gestiona tu stock y revisa qué productos están listos para la venta.</p>
+            <h2>Pedidos recibidos</h2>
+            <p className="section-subtitle">Solo aparecen pedidos que contienen tus productos.</p>
+          </div>
+          <div className="section-tag">{vendorOrders.length} pedidos</div>
+        </div>
+
+        {vendorOrders.length === 0 ? (
+          <div className="empty-state">
+            <ClipboardList size={42} />
+            <h3>No tienes pedidos todavia</h3>
+            <p>Cuando un cliente pida tus productos, lo veras aqui.</p>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Productos</th>
+                  <th>Total vendedor</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendorOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td><strong>{order.id}</strong></td>
+                    <td>
+                      <strong>{order.customer.name}</strong>
+                      <p className="text-muted">{order.customer.phone}</p>
+                    </td>
+                    <td>{order.vendorItems.length} productos</td>
+                    <td>{money(order.vendorTotal)}</td>
+                    <td><span className={`badge ${STATUS_COLORS[order.status] || 'badge-info'}`}>{order.status}</span></td>
+                    <td>{order.date}</td>
+                    <td>{renderOrderActions(order)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+      )}
+
+      {section === 'productos' && (
+      <section className="vendor-dashboard__section card" id="productos">
+        <div className="section-head">
+          <div>
+            <h2>Gestionar productos</h2>
+            <p className="section-subtitle">Agrega, edita, elimina y actualiza el stock de tus publicaciones.</p>
           </div>
           <div className="section-tag">{vendorProducts.length} productos</div>
         </div>
 
         {vendorProducts.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">??</div>
-            <h3>No tienes productos aún</h3>
-            <p>Crea tu primer producto para que tus clientes puedan comprar.</p>
-            <button className="btn btn-primary" onClick={() => setShowForm(true)}>Crear Producto</button>
+            <Package size={42} />
+            <h3>No tienes productos publicados</h3>
+            <p>Crea tu primer producto para empezar a recibir pedidos.</p>
+            <button className="btn btn-primary" onClick={openNewProductForm}>Crear producto</button>
           </div>
         ) : (
           <div className="table-container">
@@ -188,9 +418,11 @@ export default function VendorDashboard() {
               <thead>
                 <tr>
                   <th>Producto</th>
-                  <th>Categoría</th>
+                  <th>Categoria</th>
                   <th>Precio</th>
                   <th>Stock</th>
+                  <th>Stock minimo</th>
+                  <th>Estado</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -200,25 +432,38 @@ export default function VendorDashboard() {
                     <td>
                       <div className="product-cell">
                         <div className="product-avatar">
-                          {product.image && (product.image.startsWith('http') || product.image.startsWith('data:') ? <img src={product.image} alt={product.name} /> : <span>{product.image}</span>)}
+                          {product.image?.startsWith('/') || product.image?.startsWith('http') ? (
+                            <img src={product.image} alt={product.name} />
+                          ) : (
+                            <span>{product.name.charAt(0)}</span>
+                          )}
                         </div>
                         <div>
                           <strong>{product.name}</strong>
-                          <p className="text-muted">{product.description || 'Sin descripción'}</p>
+                          <p className="text-muted">{product.description || 'Sin descripcion'}</p>
                         </div>
                       </div>
                     </td>
                     <td>{product.category}</td>
-                    <td>${product.price.toFixed(2)}</td>
+                    <td>{money(product.price)}</td>
                     <td>
-                      <div className="stock-row">
-                        <input type="number" value={product.stock} onChange={(e) => changeStock(product.id, e.target.value)} className="stock-input" />
-                        <span className={`badge ${product.stock <= product.minStock ? 'badge-danger' : product.stock <= product.minStock * 1.5 ? 'badge-warning' : 'badge-success'}`}>{product.stock} uds</span>
-                      </div>
+                      <input className="stock-input" type="number" min="0" value={product.stock} onChange={(event) => handleStockChange(product.id, event.target.value)} />
+                    </td>
+                    <td>
+                      <input className="stock-input" type="number" min="0" value={product.minStock} onChange={(event) => handleMinStockChange(product, event.target.value)} />
+                    </td>
+                    <td>
+                      <span className={`badge ${product.stock === 0 ? 'badge-danger' : product.stock <= product.minStock ? 'badge-warning' : 'badge-success'}`}>
+                        {product.stock === 0 ? 'Agotado' : product.stock <= product.minStock ? 'Stock bajo' : 'Disponible'}
+                      </span>
                     </td>
                     <td className="actions-cell">
-                      <button className="btn btn-secondary" onClick={() => handleEdit(product)}><Edit3 size={14} /> Editar</button>
-                      <button className="btn btn-danger" onClick={() => { if (window.confirm('¿Eliminar este producto?')) deleteProduct(product.id); }}><Trash2 size={14} /> Eliminar</button>
+                      <button className="btn btn-secondary btn-sm" onClick={() => openEditProductForm(product)}>
+                        <Edit3 size={14} /> Editar
+                      </button>
+                      <button className="btn btn-danger btn-sm" onClick={() => { if (window.confirm('Eliminar este producto?')) deleteProduct(product.id); }}>
+                        <Trash2 size={14} /> Eliminar
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -226,56 +471,89 @@ export default function VendorDashboard() {
             </table>
           </div>
         )}
-      </div>
+      </section>
+      )}
 
-      <div className="vendor-dashboard__section card">
+      {section === 'inventario' && (
+      <section className="vendor-dashboard__section card" id="inventario">
         <div className="section-head">
           <div>
-            <h2>Pedidos</h2>
-            <p className="section-subtitle">Acepta, rechaza y revisa quién hizo cada pedido.</p>
+            <h2>Control de inventario</h2>
+            <p className="section-subtitle">Stock actual y alertas segun el minimo configurado.</p>
           </div>
-          <div className="section-tag">{vendorOrders.length} pedidos</div>
+          <div className="section-tag">{lowStockProducts.length + outOfStockProducts.length} alertas</div>
         </div>
 
-        {vendorOrders.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">??</div>
-            <h3>No hay pedidos aún</h3>
-            <p>Cuando recibas pedidos, aparecerán aquí para que los gestiones.</p>
+        <div className="inventory-grid">
+          {vendorProducts.map((product) => (
+            <div key={product.id} className={`inventory-item ${product.stock <= product.minStock ? 'inventory-item--alert' : ''}`}>
+              <div>
+                <strong>{product.name}</strong>
+                <p className="text-muted">Minimo: {product.minStock} unidades</p>
+              </div>
+              <div className="inventory-controls">
+                <button className="btn btn-secondary btn-sm" onClick={() => updateStock(product.id, Math.max(0, product.stock - 1))}>-1</button>
+                <input className="stock-input" type="number" min="0" value={product.stock} onChange={(event) => handleStockChange(product.id, event.target.value)} />
+                <button className="btn btn-secondary btn-sm" onClick={() => updateStock(product.id, product.stock + 1)}>+1</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+      )}
+
+      {section === 'estadisticas' && (
+        <section className="vendor-dashboard__section card" id="estadisticas">
+          <div className="section-head">
+            <div>
+              <h2>Detalle de estadisticas</h2>
+              <p className="section-subtitle">Indicadores clave de ventas, pedidos e inventario.</p>
+            </div>
           </div>
-        ) : (
+
+          <div className="vendor-summary-grid">
+            <div className="summary-panel">
+              <h3>Pedidos aceptados</h3>
+              <p>{vendorOrders.filter((order) => order.status === 'aceptado').length}</p>
+            </div>
+            <div className="summary-panel">
+              <h3>Pedidos listos</h3>
+              <p>{vendorOrders.filter((order) => order.status === 'listo').length}</p>
+            </div>
+            <div className="summary-panel">
+              <h3>Productos agotados</h3>
+              <p>{outOfStockProducts.length}</p>
+            </div>
+          </div>
+
           <div className="table-container">
             <table>
               <thead>
                 <tr>
-                  <th>Pedido</th>
-                  <th>Cliente</th>
-                  <th>Total</th>
+                  <th>Producto</th>
+                  <th>Stock</th>
+                  <th>Stock minimo</th>
                   <th>Estado</th>
-                  <th>Fecha</th>
-                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {vendorOrders.slice(0, 8).map((order) => (
-                  <tr key={order.id}>
-                    <td>{order.id}</td>
-                    <td>{order.clientName}</td>
-                    <td>${order.total.toFixed(2)}</td>
-                    <td><span className={`badge ${order.status === 'entregado' ? 'badge-success' : order.status === 'pendiente' ? 'badge-danger' : 'badge-info'}`}>{order.status}</span></td>
-                    <td>{order.date}</td>
-                    <td className="actions-cell">
-                      <button className="btn btn-success" onClick={() => handleOrderAction(order.id, 'aceptar')}>Aceptar</button>
-                      <button className="btn btn-danger" onClick={() => handleOrderAction(order.id, 'rechazar')}>Rechazar</button>
-                      <button className="btn btn-secondary" onClick={() => setSelectedOrder(order)}>Ver</button>
+                {vendorProducts.map((product) => (
+                  <tr key={product.id}>
+                    <td>{product.name}</td>
+                    <td>{product.stock}</td>
+                    <td>{product.minStock}</td>
+                    <td>
+                      <span className={`badge ${product.stock === 0 ? 'badge-danger' : product.stock <= product.minStock ? 'badge-warning' : 'badge-success'}`}>
+                        {product.stock === 0 ? 'Agotado' : product.stock <= product.minStock ? 'Stock bajo' : 'Disponible'}
+                      </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </section>
+      )}
 
       {selectedOrder && (
         <div className="modal-overlay" onClick={() => setSelectedOrder(null)}>
@@ -283,34 +561,39 @@ export default function VendorDashboard() {
             <div className="modal-header">
               <div>
                 <h2>Pedido {selectedOrder.id}</h2>
-                <p className="section-subtitle">Cliente: {selectedOrder.clientName}</p>
+                <p className="section-subtitle">Fecha: {selectedOrder.date} | Estado: {selectedOrder.status}</p>
               </div>
-              <button className="btn btn-secondary" onClick={() => setSelectedOrder(null)}>Cerrar</button>
+              <button className="btn btn-secondary" onClick={() => setSelectedOrder(null)}><X size={16} /> Cerrar</button>
             </div>
+
             <div className="modal-body">
-              <div className="form-group">
-                <label>Fecha</label>
-                <p>{selectedOrder.date}</p>
+              <div className="customer-panel">
+                <h3>Informacion del cliente</h3>
+                <div className="customer-grid">
+                  <p><strong>Nombre:</strong> {selectedOrder.customer.name}</p>
+                  <p><strong>Correo:</strong> {selectedOrder.clientEmail}</p>
+                  <p><strong>Telefono:</strong> {selectedOrder.customer.phone}</p>
+                  <p><strong>Direccion:</strong> {selectedOrder.customer.address}</p>
+                  <p className="customer-grid__wide"><strong>Referencia:</strong> {selectedOrder.customer.reference}</p>
+                  <p className="customer-grid__wide"><strong>Notas:</strong> {selectedOrder.notes || 'Sin notas'}</p>
+                </div>
               </div>
-              <div className="form-group">
-                <label>Estado</label>
-                <p>{selectedOrder.status}</p>
-              </div>
-              <div className="form-group">
-                <label>Productos</label>
+
+              <div>
+                <h3>Productos del pedido</h3>
                 <div className="order-items">
-                  {selectedOrder.items.map((item, index) => (
-                    <div key={index} className="order-item-row">
+                  {selectedOrder.vendorItems.map((item) => (
+                    <div key={`${selectedOrder.id}-${item.productId}`} className="order-item-row">
                       <span>{item.name}</span>
-                      <span>{item.qty} x ${item.price.toFixed(2)}</span>
+                      <span>{item.qty} x {money(item.price)} = {money(item.qty * item.price)}</span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
+
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setSelectedOrder(null)}>Cerrar</button>
-              <button className="btn btn-success" onClick={() => { handleOrderAction(selectedOrder.id, 'listo'); setSelectedOrder(null); }}>Marcar listo</button>
+              {renderOrderActions(selectedOrder)}
             </div>
           </div>
         </div>

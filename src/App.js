@@ -57,7 +57,11 @@ function AppRoutes() {
       <Route path="/mis-pedidos" element={<ProtectedRoute role="cliente"><Layout><MyOrdersPage /></Layout></ProtectedRoute>} />
 
       {/* Vendor routes */}
-      <Route path="/vendor" element={<ProtectedRoute role="vendor"><Layout><VendorDashboard /></Layout></ProtectedRoute>} />
+      <Route path="/vendor" element={<ProtectedRoute role="vendor"><Layout><VendorDashboard section="dashboard" /></Layout></ProtectedRoute>} />
+      <Route path="/vendor/pedidos" element={<ProtectedRoute role="vendor"><Layout><VendorDashboard section="pedidos" /></Layout></ProtectedRoute>} />
+      <Route path="/vendor/productos" element={<ProtectedRoute role="vendor"><Layout><VendorDashboard section="productos" /></Layout></ProtectedRoute>} />
+      <Route path="/vendor/inventario" element={<ProtectedRoute role="vendor"><Layout><VendorDashboard section="inventario" /></Layout></ProtectedRoute>} />
+      <Route path="/vendor/estadisticas" element={<ProtectedRoute role="vendor"><Layout><VendorDashboard section="estadisticas" /></Layout></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to={currentUser ? getHomeRoute(currentUser.role) : '/auth'} replace />} />
     </Routes>

@@ -105,7 +105,7 @@ export default function ReportsAdmin() {
               const product = products.find(pr => pr.name === p.name);
               return (
                 <div key={p.name} style={{ background: 'var(--gray-50)', borderRadius: 'var(--radius-md)', padding: '16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: '2rem' }}>{product?.image || '🍬'}</span>
+                  <span style={{ fontSize: '2rem' }}>{product?.image || ''}</span>
                   <div>
                     <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>{p.name}</p>
                     <p style={{ color: 'var(--pink-500)', fontWeight: 700 }}>{p.qty} vendidos</p>
