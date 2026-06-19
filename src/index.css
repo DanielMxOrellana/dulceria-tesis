@@ -1,18 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 :root {
-  --pink-100: #fff0f3;
-  --pink-200: #ffd6e0;
-  --pink-300: #ffadc2;
-  --pink-400: #ff80a1;
-  --pink-500: #e8547a;
-  --pink-600: #c93261;
+  --primary: #2E6B7A;
+  --primary-dark: #1E4F5C;
+  --primary-light: #D6E8EC;
+  --accent: #4A8FA0;
+  --on-primary: #FFFFFF;
+  --neutral-bg: #FAF7F2;
+  --text-secondary: #F5F0E8;
+  --pink-50: #F2F8FA;
+  --pink-100: var(--primary-light);
+  --pink-200: #B8D6DD;
+  --pink-300: #8DBCC7;
+  --pink-400: var(--accent);
+  --pink-500: var(--primary);
+  --pink-600: var(--primary-dark);
+  --pink-700: #143843;
   --brown-100: #fdf3e7;
   --brown-200: #f5d9b0;
   --brown-300: #d4956a;
   --brown-400: #a0522d;
   --brown-500: #7a3b1e;
-  --cream: #fffbf5;
+  --cream: var(--neutral-bg);
   --white: #ffffff;
   --gray-50: #f9f6f3;
   --gray-100: #f0ebe4;
@@ -26,10 +35,10 @@
   --warning: #f39c12;
   --danger: #e74c3c;
   --info: #3498db;
-  --shadow-sm: 0 1px 3px rgba(120, 60, 30, 0.08);
-  --shadow-md: 0 4px 12px rgba(120, 60, 30, 0.12);
-  --shadow-lg: 0 8px 30px rgba(120, 60, 30, 0.16);
-  --shadow-xl: 0 20px 60px rgba(120, 60, 30, 0.20);
+  --shadow-sm: 0 1px 3px rgba(30, 79, 92, 0.08);
+  --shadow-md: 0 4px 12px rgba(30, 79, 92, 0.12);
+  --shadow-lg: 0 8px 30px rgba(30, 79, 92, 0.16);
+  --shadow-xl: 0 20px 60px rgba(30, 79, 92, 0.20);
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 22px;
@@ -72,17 +81,17 @@ a { text-decoration: none; color: inherit; }
 }
 
 .btn-primary {
-  background: var(--pink-500);
-  color: white;
+  background: var(--primary);
+  color: var(--on-primary);
 }
-.btn-primary:hover { background: var(--pink-600); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 
 .btn-secondary {
-  background: var(--brown-100);
-  color: var(--brown-500);
-  border: 1px solid var(--brown-200);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border: 1px solid var(--pink-200);
 }
-.btn-secondary:hover { background: var(--brown-200); }
+.btn-secondary:hover { background: var(--pink-200); }
 
 .btn-danger { background: #fdecea; color: var(--danger); border: 1px solid #f5c2be; }
 .btn-danger:hover { background: var(--danger); color: white; }
@@ -133,7 +142,7 @@ a { text-decoration: none; color: inherit; }
 .form-group select:focus,
 .form-group textarea:focus {
   border-color: var(--pink-400);
-  box-shadow: 0 0 0 3px rgba(232, 84, 122, 0.12);
+  box-shadow: 0 0 0 3px rgba(74, 143, 160, 0.16);
   background: white;
 }
 

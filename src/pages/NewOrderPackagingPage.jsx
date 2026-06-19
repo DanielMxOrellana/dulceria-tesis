@@ -67,7 +67,7 @@ export default function NewOrderPackagingPage() {
                       background: isActive ? 'var(--pink-50)' : 'white',
                       cursor: 'pointer',
                       position: 'relative',
-                      boxShadow: isActive ? '0 6px 18px rgba(236,72,153,0.08)' : 'none',
+                      boxShadow: isActive ? '0 6px 18px rgba(30, 79, 92, 0.10)' : 'none',
                     }}
                   >
                     {isActive && (
@@ -101,7 +101,7 @@ export default function NewOrderPackagingPage() {
                     background: isActive ? 'var(--pink-50)' : 'white',
                     cursor: 'pointer',
                     position: 'relative',
-                    boxShadow: isActive ? '0 8px 24px rgba(236,72,153,0.08)' : 'none',
+                    boxShadow: isActive ? '0 8px 24px rgba(30, 79, 92, 0.10)' : 'none',
                     transition: 'transform 120ms ease, box-shadow 120ms ease',
                     transform: isActive ? 'translateY(-2px)' : 'none',
                   }}

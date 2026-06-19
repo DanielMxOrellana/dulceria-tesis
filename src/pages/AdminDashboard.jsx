@@ -16,7 +16,7 @@ export default function AdminDashboard() {
     { label: 'Productos', value: products.length, icon: Package, color: '#eaf4fd', iconColor: '#1a7abc', to: '/admin/productos' },
     { label: 'Pedidos Hoy', value: todayOrders.length, icon: ClipboardList, color: '#fef8e7', iconColor: '#c17d00', to: '/admin/pedidos' },
     { label: 'Clientes', value: users.filter(u => u.role === 'cliente').length, icon: Users, color: '#e8f8f0', iconColor: '#1a9b56', to: '/admin/usuarios' },
-    { label: 'Ingresos', value: `$${totalRevenue.toFixed(2)}`, icon: TrendingUp, color: '#fde8f0', iconColor: '#c93261', to: '/admin/reportes' },
+    { label: 'Ingresos', value: `$${totalRevenue.toFixed(2)}`, icon: TrendingUp, color: '#D6E8EC', iconColor: '#1E4F5C', to: '/admin/reportes' },
   ];
 
   const recentOrders = orders.slice(0, 5);

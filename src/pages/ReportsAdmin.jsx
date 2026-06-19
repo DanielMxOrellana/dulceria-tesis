@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '../context/AppContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
-const COLORS = ['#e8547a', '#f5a5bb', '#a0522d', '#d4956a', '#f5d9b0', '#ffadc2'];
+const COLORS = ['#2E6B7A', '#4A8FA0', '#1E4F5C', '#8DBCC7', '#D6E8EC', '#B8D6DD'];
 
 export default function ReportsAdmin() {
   const { orders, products } = useApp();

@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Users, ShieldOff, Shield, Plus, X } from 'lucide-react';
 
 const ROLE_COLORS = {
-  admin: '#fde8f0',
+  admin: '#D6E8EC',
   cliente: '#eaf4fd',
   vendor: '#e8f8f0'
 };
@@ -127,7 +127,7 @@ export default function UsersAdmin() {
                   <tr key={u.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, var(--pink-300), var(--pink-500))', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.9rem', flexShrink: 0 }}>
+                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--primary-dark))', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.9rem', flexShrink: 0 }}>
                           {u.name[0]}
                         </div>
                         <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{u.name}</span>
