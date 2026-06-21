@@ -1,9 +1,8 @@
-import { TIPOS_EMPAQUE } from '../data/mockData';
+﻿import { TIPOS_EMPAQUE } from '../data/mockData';
 
 export const PACKAGING_TYPES = [
-  { key: 'fundas', label: 'Fundas de papel', emoji: '🛍️', description: 'Ligero y práctico' },
-  { key: 'desechables', label: 'Desechable / plástico', emoji: '📦', description: 'Más rígido y protegido' },
-  { key: 'canastos', label: 'Canastos', emoji: '🎁', description: 'Presentación premium' },
+  { key: 'desechables', label: 'Desechable / plástico', description: 'Más rígido y protegido' },
+  { key: 'canastos', label: 'Canastos', description: 'Presentación premium' },
 ];
 
 export const ORDER_STEPS = [

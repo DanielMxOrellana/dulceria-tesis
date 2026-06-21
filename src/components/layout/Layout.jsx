@@ -57,7 +57,7 @@ export default function Layout({ children }) {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}>
         <div className="sidebar-brand">
-          <span className="brand-icon">🍬</span>
+          <span className="brand-icon"></span>
           <div>
             <h2>Dulcería El Suspiro</h2>
             <span></span>

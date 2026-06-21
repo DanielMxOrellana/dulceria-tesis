@@ -1,14 +1,19 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Gift, Package } from 'lucide-react';
 import { ALL_PACKAGING_OPTIONS, ORDER_STEPS, PACKAGING_TYPES, getBestPackageForCount, getBestPackageForType, getPackagingsForType } from '../utils/orderFlow';
+
+const PACKAGING_ICONS = {
+  desechables: Package,
+  canastos: Gift,
+};
 
 export default function NewOrderPackagingPage() {
   const { cartCount, orderDraft, updateOrderDraft } = useApp();
   const navigate = useNavigate();
 
-  const selectedType = orderDraft.packagingType || 'fundas';
+  const selectedType = orderDraft.packagingType || 'desechables';
   const selectedPackaging = ALL_PACKAGING_OPTIONS.find(option => option.id === orderDraft.packagingId) || getBestPackageForCount(cartCount);
   const packagingOptions = getPackagingsForType(selectedType);
 
@@ -53,6 +58,7 @@ export default function NewOrderPackagingPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 18 }}>
               {PACKAGING_TYPES.map(type => {
                 const isActive = selectedType === type.key;
+                const TypeIcon = PACKAGING_ICONS[type.key] || Package;
                 return (
                   <button
                     key={type.key}
@@ -72,10 +78,10 @@ export default function NewOrderPackagingPage() {
                   >
                     {isActive && (
                       <span style={{ position: 'absolute', top: 8, right: 10, background: 'var(--pink-500)', color: 'white', borderRadius: 999, width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
-                        ✓
+                        <Check size={14} />
                       </span>
                     )}
-                    <div style={{ fontSize: '1.2rem', marginBottom: 8 }}>{type.emoji}</div>
+                    <div style={{ color: 'var(--pink-500)', marginBottom: 8 }}><TypeIcon size={22} /></div>
                     <div style={{ fontWeight: 700, marginBottom: 3 }}>{type.label}</div>
                     <div style={{ fontSize: '0.82rem', color: 'var(--gray-400)' }}>{type.description}</div>
                   </button>
@@ -108,12 +114,12 @@ export default function NewOrderPackagingPage() {
                 >
                   {isActive && (
                     <span style={{ position: 'absolute', top: 10, right: 12, background: 'var(--pink-500)', color: 'white', borderRadius: 999, width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
-                      ✓
+                      <Check size={14} />
                     </span>
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', marginBottom: 8 }}>
                     <div>
-                      <div style={{ fontWeight: 700, marginBottom: 3 }}>{option.emoji} {option.nombre}</div>
+                      <div style={{ fontWeight: 700, marginBottom: 3 }}>{option.nombre}</div>
                       <div style={{ fontSize: '0.82rem', color: 'var(--gray-400)' }}>{option.descripcion}</div>
                     </div>
                     <span style={{ fontWeight: 700, color: 'var(--pink-500)', whiteSpace: 'nowrap' }}>${option.precio.toFixed(2)}</span>
@@ -133,7 +139,7 @@ export default function NewOrderPackagingPage() {
 
           {selectedPackaging && (
             <div style={{ background: 'var(--gray-50)', borderRadius: 'var(--radius-md)', padding: '12px 16px', color: 'var(--gray-500)' }}>
-              Empaque seleccionado: <strong>{selectedPackaging.emoji} {selectedPackaging.nombre}</strong> · capacidad hasta {selectedPackaging.capacidadMax} dulces
+              Empaque seleccionado: <strong>{selectedPackaging.nombre}</strong> · capacidad hasta {selectedPackaging.capacidadMax} dulces
             </div>
           )}
         </div>

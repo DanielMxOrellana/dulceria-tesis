@@ -1,4 +1,4 @@
-export const PRODUCTS_INITIAL = [
+﻿export const PRODUCTS_INITIAL = [
   { id: 1, name: 'Galletas Con Mermelada', price: 0.25, disponible: true, stock: 100, minStock: 20, category: 'tradicionales', image: '/img/dulces/galletas con mermelada.png', description: 'Dulce tradicional', available: true, vendorId: 6, vendorName: 'Sweet Dreams' },
   { id: 2, name: 'Arepas', price: 0.25, disponible: true, stock: 100, minStock: 20, category: 'tradicionales', image: '/img/dulces/arepas.png', description: 'Dulce tradicional', available: true, vendorId: 6, vendorName: 'Sweet Dreams' },
   { id: 3, name: 'Aplanchados', price: 0.25, disponible: true, stock: 100, minStock: 20, category: 'tradicionales', image: '/img/dulces/aplanchadoss.png', description: 'Dulce tradicional', available: true, vendorId: 6, vendorName: 'Sweet Dreams' },
@@ -42,33 +42,25 @@ export const PRODUCTS_INITIAL = [
 ];
 
 export const TIPOS_EMPAQUE = {
-  fundas: [
-    { id: 'funda_s', nombre: 'Funda Pequeña', precio: 1.00, descripcion: 'Ideal para 1 a 12 dulces', emoji: '🛍️', capacidadMax: 12 },
-    { id: 'funda_m', nombre: 'Funda Mediana', precio: 1.75, descripcion: 'Ideal para 13 a 24 dulces', emoji: '🛍️', capacidadMax: 24 },
-    { id: 'funda_l', nombre: 'Funda Grande', precio: 2.50, descripcion: 'Ideal para 25 a 40 dulces', emoji: '🛍️', capacidadMax: 40 },
-  ],
   desechables: [
-    { id: 'desechable_xs', nombre: 'Caja Desechable XS', precio: 3.00, descripcion: 'Ideal para 1 a 8 dulces', emoji: '📦', capacidadMax: 8 },
-    { id: 'desechable_s', nombre: 'Caja Desechable S', precio: 6.00, descripcion: 'Ideal para 9 a 16 dulces', emoji: '📦', capacidadMax: 16 },
-    { id: 'desechable_m', nombre: 'Caja Desechable M', precio: 9.00, descripcion: 'Ideal para 17 a 24 dulces', emoji: '📦', capacidadMax: 24 },
-    { id: 'desechable_l', nombre: 'Caja Desechable L', precio: 12.00, descripcion: 'Ideal para 25 a 32 dulces', emoji: '📦', capacidadMax: 32 },
-    { id: 'desechable_xl', nombre: 'Caja Desechable XL', precio: 15.00, descripcion: 'Ideal para 33 a 45 dulces', emoji: '📦', capacidadMax: 45 },
+    { id: 'desechable_xs', nombre: 'Caja Desechable Pequeña', precio: 3.00, descripcion: 'Ideal para 1 a 8 dulces', emoji: '', capacidadMax: 8 },
+    { id: 'desechable_s', nombre: 'Caja Desechable Mediana', precio: 6.00, descripcion: 'Ideal para 9 a 16 dulces', emoji: '', capacidadMax: 16 },
+    { id: 'desechable_m', nombre: 'Caja Desechable Grande', precio: 9.00, descripcion: 'Ideal para 17 a 24 dulces', emoji: '', capacidadMax: 24 },
+    { id: 'desechable_l', nombre: 'Caja Desechable Extra Grande', precio: 12.00, descripcion: 'Ideal para 25 a 32 dulces', emoji: '', capacidadMax: 32 },
   ],
   canastos: [
-    { id: 'canasto_s', nombre: 'Canasto Pequeño', precio: 3.00, descripcion: 'Canasto artesanal 20×15cm', emoji: '🎁', capacidadMax: 20 },
-    { id: 'canasto_5', nombre: 'Canasto Pequeño Plus', precio: 5.00, descripcion: 'Canasto artesanal 24×18cm', emoji: '🎁', capacidadMax: 28 },
-    { id: 'canasto_7', nombre: 'Canasto Mediano', precio: 7.00, descripcion: 'Canasto artesanal 28×22cm', emoji: '🎁', capacidadMax: 35 },
-    { id: 'canasto_10', nombre: 'Canasto Mediano Plus', precio: 10.00, descripcion: 'Canasto artesanal 32×25cm', emoji: '🎁', capacidadMax: 45 },
-    { id: 'canasto_15', nombre: 'Canasto Grande', precio: 15.00, descripcion: 'Canasto artesanal 40×35cm', emoji: '🎁', capacidadMax: 60 },
-    { id: 'canasto_20', nombre: 'Canasto XL Premium', precio: 20.00, descripcion: 'Canasto artesanal 50×45cm con moño', emoji: '🎁', capacidadMax: 100 },
-    { id: 'canasto_25', nombre: 'Canasto Deluxe', precio: 25.00, descripcion: 'Canasto artesanal 55×45cm con decoración', emoji: '🎁', capacidadMax: 125 },
-    { id: 'canasto_30', nombre: 'Canasto Especial', precio: 30.00, descripcion: 'Canasto artesanal 60×50cm premium', emoji: '🎁', capacidadMax: 150 },
-    { id: 'canasto_35', nombre: 'Canasto Gran Premium', precio: 35.00, descripcion: 'Canasto artesanal 65×55cm edición especial', emoji: '🎁', capacidadMax: 180 },
-    { id: 'canasto_40', nombre: 'Canasto Supremo', precio: 40.00, descripcion: 'Canasto artesanal 70×60cm tamaño familiar', emoji: '🎁', capacidadMax: 220 },
+    { id: 'canasto_s', nombre: 'Canasto Pequeño', precio: 3.00, descripcion: 'Canasto artesanal 20x15cm', emoji: '', capacidadMax: 20 },
+    { id: 'canasto_5', nombre: 'Canasto Pequeño Plus', precio: 5.00, descripcion: 'Canasto artesanal 24x18cm', emoji: '', capacidadMax: 28 },
+    { id: 'canasto_7', nombre: 'Canasto Mediano', precio: 7.00, descripcion: 'Canasto artesanal 28x22cm', emoji: '', capacidadMax: 35 },
+    { id: 'canasto_10', nombre: 'Canasto Mediano Plus', precio: 10.00, descripcion: 'Canasto artesanal 32x25cm', emoji: '', capacidadMax: 45 },
+    { id: 'canasto_15', nombre: 'Canasto Grande', precio: 15.00, descripcion: 'Canasto artesanal 40x35cm', emoji: '', capacidadMax: 60 },
+    { id: 'canasto_20', nombre: 'Canasto XL Premium', precio: 20.00, descripcion: 'Canasto artesanal 50x45cm con moño', emoji: '', capacidadMax: 100 },
+    { id: 'canasto_25', nombre: 'Canasto Deluxe', precio: 25.00, descripcion: 'Canasto artesanal 55x45cm con decoración', emoji: '', capacidadMax: 125 },
+    { id: 'canasto_30', nombre: 'Canasto Especial', precio: 30.00, descripcion: 'Canasto artesanal 60x50cm premium', emoji: '', capacidadMax: 150 },
+    { id: 'canasto_35', nombre: 'Canasto Gran Premium', precio: 35.00, descripcion: 'Canasto artesanal 65x55cm edición especial', emoji: '', capacidadMax: 180 },
+    { id: 'canasto_40', nombre: 'Canasto Supremo', precio: 40.00, descripcion: 'Canasto artesanal 70x60cm tamaño familiar', emoji: '', capacidadMax: 220 },
   ],
 };
-
-export const tiposFundas = TIPOS_EMPAQUE.fundas;
 
 export const tiposDesechables = TIPOS_EMPAQUE.desechables;
 
@@ -106,3 +98,5 @@ export const STATUS_COLORS = {
   entregado: 'badge-success',
   rechazado: 'badge-danger',
 };
+
+

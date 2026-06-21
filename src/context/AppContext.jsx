@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+﻿import React, { createContext, useContext, useEffect, useState } from 'react';
 import { PRODUCTS_INITIAL, ORDERS_INITIAL, USERS_INITIAL } from '../data/mockData';
 import { api, hasApi } from '../services/api';
 
@@ -12,7 +12,7 @@ export function AppProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [apiError, setApiError] = useState('');
   const [orderDraft, setOrderDraft] = useState({
-    packagingType: 'fundas',
+    packagingType: 'desechables',
     packagingId: '',
     customer: {
       name: '',
@@ -67,7 +67,7 @@ export function AppProvider({ children }) {
   };
 
   const logout = () => { setCurrentUser(null); setCart([]); setOrderDraft({
-    packagingType: 'fundas',
+    packagingType: 'desechables',
     packagingId: '',
     customer: { name: '', phone: '', address: '', reference: '' },
     notes: '',
@@ -144,7 +144,7 @@ export function AppProvider({ children }) {
   };
 
   const resetOrderDraft = () => setOrderDraft({
-    packagingType: 'fundas',
+    packagingType: 'desechables',
     packagingId: '',
     customer: { name: '', phone: '', address: '', reference: '' },
     notes: '',
@@ -223,3 +223,5 @@ export function AppProvider({ children }) {
 }
 
 export const useApp = () => useContext(AppContext);
+
+
