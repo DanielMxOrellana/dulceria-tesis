@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { PRODUCTS_INITIAL, ORDERS_INITIAL, USERS_INITIAL } from '../data/mockData';
+import { api, hasApi } from '../services/api';
 
 const AppContext = createContext();
 
@@ -9,6 +10,7 @@ export function AppProvider({ children }) {
   const [orders, setOrders] = useState(ORDERS_INITIAL);
   const [users, setUsers] = useState(USERS_INITIAL);
   const [cart, setCart] = useState([]);
+  const [apiError, setApiError] = useState('');
   const [orderDraft, setOrderDraft] = useState({
     packagingType: 'fundas',
     packagingId: '',
@@ -20,6 +22,37 @@ export function AppProvider({ children }) {
     },
     notes: '',
   });
+
+  useEffect(() => {
+    if (!hasApi) return;
+
+    let active = true;
+
+    Promise.all([
+      api.getProducts().catch(() => null),
+      api.getOrders().catch(() => null),
+      api.getUsers().catch(() => null),
+    ]).then(([apiProducts, apiOrders, apiUsers]) => {
+      if (!active) return;
+      if (Array.isArray(apiProducts)) setProducts(apiProducts);
+      if (Array.isArray(apiOrders)) setOrders(apiOrders);
+      if (Array.isArray(apiUsers)) setUsers(apiUsers);
+      setApiError('');
+    }).catch(() => {
+      if (active) setApiError('No se pudo conectar con el backend. Usando datos locales.');
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const syncApi = (operation) => {
+    if (!hasApi) return;
+    operation().then(() => setApiError('')).catch(() => {
+      setApiError('No se pudo sincronizar con el backend. Revisa que la API este activa.');
+    });
+  };
 
   // Auth
   const login = (email, password) => {
@@ -46,6 +79,7 @@ export function AppProvider({ children }) {
     const newUser = { id: Date.now(), name, email, role: 'cliente', status: 'activo', joinDate: new Date().toISOString().split('T')[0] };
     setUsers(prev => [...prev, newUser]);
     setCurrentUser(newUser);
+    syncApi(() => api.createUser(newUser));
     return { success: true };
   };
 
@@ -54,6 +88,7 @@ export function AppProvider({ children }) {
     if (exists) return { error: 'El correo ya está registrado.' };
     const newUser = { id: Date.now(), name, email, role, status: 'activo', joinDate: new Date().toISOString().split('T')[0] };
     setUsers(prev => [...prev, newUser]);
+    syncApi(() => api.createUser(newUser));
     return { success: true, user: newUser };
   };
 
@@ -67,16 +102,22 @@ export function AppProvider({ children }) {
       vendorName: currentUser?.name
     };
     setProducts(prev => [...prev, newP]);
+    syncApi(() => api.createProduct(newP));
   };
 
   const updateProduct = (id, updates) => {
     setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates, available: (updates.stock ?? p.stock) > 0, vendorId: updates.vendorId ?? p.vendorId, vendorName: updates.vendorName ?? p.vendorName } : p));
+    syncApi(() => api.updateProduct(id, updates));
   };
 
-  const deleteProduct = (id) => setProducts(prev => prev.filter(p => p.id !== id));
+  const deleteProduct = (id) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
+    syncApi(() => api.deleteProduct(id));
+  };
 
   const updateStock = (id, qty) => {
     setProducts(prev => prev.map(p => p.id === id ? { ...p, stock: qty, available: qty > 0 } : p));
+    syncApi(() => api.updateProduct(id, { stock: qty, available: qty > 0 }));
   };
 
   // Cart
@@ -142,6 +183,7 @@ export function AppProvider({ children }) {
     cart.forEach(item => {
       setProducts(prev => prev.map(p => p.id === item.productId ? { ...p, stock: Math.max(0, p.stock - item.qty), available: Math.max(0, p.stock - item.qty) > 0 } : p));
     });
+    syncApi(() => api.createOrder(newOrder));
     clearCart();
     resetOrderDraft();
     return newOrder;
@@ -149,11 +191,16 @@ export function AppProvider({ children }) {
 
   const updateOrderStatus = (orderId, status) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+    syncApi(() => api.updateOrder(orderId, { status }));
   };
 
   // Users (Admin)
   const toggleUserBlock = (userId) => {
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: u.status === 'activo' ? 'bloqueado' : 'activo' } : u));
+    const user = users.find(u => u.id === userId);
+    if (user) {
+      syncApi(() => api.updateUser(userId, { status: user.status === 'activo' ? 'bloqueado' : 'activo' }));
+    }
   };
 
   const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= p.minStock);
@@ -162,6 +209,7 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
       currentUser, login, logout, register, createUser,
+      apiError,
       products, addProduct, updateProduct, deleteProduct, updateStock,
       orders, createOrder, updateOrderStatus,
       users, toggleUserBlock,
